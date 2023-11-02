@@ -6,13 +6,13 @@ from typing import List, Tuple, Dict
 import logging
 import mysql.connector
 
+
 def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
     for field in fields:
         message = re.sub('{}=[^{}]+'.format(field, separator),
                          '{}={}'.format(field, redaction), message)
     return message
-
 
 
 class RedactingFormatter(logging.Formatter):
@@ -28,14 +28,17 @@ class RedactingFormatter(logging.Formatter):
         self.fields: str = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        record.msg: str = filter_datum(self.fields, self.REDACTION, record.msg, self.SEPARATOR)
+        record.msg: str = filter_datum(self.fields, self.REDACTION,
+                                       record.msg, self.SEPARATOR)
         return super().format(record)
+
 
 PII_FIELDS: Tuple[str] = ("name", "email", "phone", "ssn", "password")
 
+
 def get_logger() -> logging.Logger:
     '''creates a logging.Logger object.'''
-    logger = login.getlogger('user_data')
+    logger = logging.getLogger('user_data')
     logger.setLevel(logging.INFO)
     stream_handler = logging.StreamHandler()
     formatter = RedactingFormatter(list(PII_FIELDS))
@@ -45,8 +48,9 @@ def get_logger() -> logging.Logger:
 
     return logger
 
+
 def get_db():
-    ''''''
+    '''creating a connector object to our mysql data.'''
     config: Dict = {
         'user': os.getenv("PERSONAL_DATA_DB_USERNAME", 'root'),
         'password': os.getenv("PERSONAL_DATA_DB_PASSWORD", ""),
@@ -55,3 +59,23 @@ def get_db():
     }
 
     return mysql.connector.connect(**config)
+
+
+def main() -> None:
+    '''main function that retrieves all objects from users table an redact PII.
+    '''
+    log: logging.Logger = get_logger()
+    db: mysql.connector = get_db()
+    cursor: cursor.MySQLCursor = db.cursor()
+    cursor.execute('SELECT * FROM users;')
+    message: str = 'name={}; email={}; phone={}; '
+    message += 'ssn={}; password={}; ip={}; last_login={}; user_agent={};'
+    for row in cursor.fetchall():
+        log.info(message.format(row[0], row[1], row[2], row[3],
+                                row[4], row[5], row[6], row[7]))
+    cursor.close()
+    db.close()
+
+
+if __name__ == '__main__':
+    main()
