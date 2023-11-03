@@ -9,9 +9,10 @@ import mysql.connector
 
 def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
+    '''implementing a filter function.'''
     for field in fields:
-        message = re.sub('{}=[^{}]+'.format(field, separator),
-                         '{}={}'.format(field, redaction), message)
+        message: str = re.sub('{}=[^{}]+'.format(field, separator),
+                              '{}={}'.format(field, redaction), message)
     return message
 
 
