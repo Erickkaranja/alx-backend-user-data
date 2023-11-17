@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""creating a sqlalchemy model user."""
+"""creating a sqlalchemy model called users."""
 
-from sqlalchemy import Column, Integer, String, Sequence
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
 class User(Base):
-    """initializing class user."""
+    """Create a mapping object to a table called users in the database.
+    """
     __tablename__: str = 'users'
 
     id: int = Column(Integer, primary_key=True, autoincrement=True)
