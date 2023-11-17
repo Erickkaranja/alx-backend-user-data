@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DB module
+"""implementing DB class reptesenting database session.
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -32,7 +32,7 @@ class DB:
         return self.__session
 
     def add_user(self, email: str, hashed_password: str) -> User:
-        """creating a user object.
+        """creating a new user object by email and password.
         """
         new_user: User = User()
         new_user.email = email
@@ -42,7 +42,7 @@ class DB:
         return new_user
 
     def find_user_by(self, **kwargs) -> User:
-        """finding user by passed key.
+        """finding user by passed keyword arguements passed.
         """
         users = self._session.query(User)
         for k, v in kwargs.items():
@@ -52,8 +52,8 @@ class DB:
             raise NoResultFound
         return user
 
-    def update_user(self, user_id, **kwargs):
-        """Updates user's attributes
+    def update_user(self, user_id, **kwargs) -> None:
+        """Updates user's attributes with the passed id.
         """
         user = self.find_user_by(id=user_id)
         for k, v in kwargs.items():
