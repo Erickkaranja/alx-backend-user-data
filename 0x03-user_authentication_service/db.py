@@ -46,6 +46,8 @@ class DB:
         """
         users = self._session.query(User)
         for k, v in kwargs.items():
+            if k not in ['id', 'email', 'session_id']:
+                raise InvalidRequestError
             users = users.filter_by(**{k: v})
         user = users.first()
         if user is None:
