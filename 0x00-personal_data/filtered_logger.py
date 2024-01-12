@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 '''implementing a filter_logger module.'''
+
 import os
 import re
 from typing import List, Tuple, Dict
@@ -9,7 +10,14 @@ import mysql.connector
 
 def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
-    '''implementing a filter function.'''
+    '''implementing a filter function.
+       Args:
+           fields: input fields whose data is to be obfuscated.
+           redaction: sting to obfuscate.
+           message: contains field to be obfuscated.
+       Return:
+           a message with obfuscated fields.
+    '''
     for field in fields:
         message: str = re.sub('{}=[^{}]+'.format(field, separator),
                               '{}={}'.format(field, redaction), message)
