@@ -4,7 +4,7 @@
 import bcrypt
 import uuid
 from user import User
-from typing import Union
+from typing import Union, TypeVar
 from db import DB
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -31,21 +31,22 @@ class Auth:
 
     def register_user(self, email: str, password: str) -> User:
         """register a user to the database."""
-        if type(email) is str and type(password) is str:
-            hashed_password: bytes = _hash_password(password)
+        if isinstance(email, str) and isinstance(password, str):
             try:
-                user: User = self._db.find_user_by(email=email)
+                user: TypeVar('User') = self._db.find_user_by(email=email)
                 raise ValueError(f"User {email} already exists")
 
             except NoResultFound:
-                registered_user = self._db.add_user(email, hashed_password)
+                hashed_password: bytes = _hash_password(password)
+                registered_user: TypeVar('user') = \
+                self._db.add_user(email, hashed_password)
                 return registered_user
 
     def valid_login(self, email: str, password: str) -> bool:
         """check if a given login is valid."""
-        if type(email) is str and type(password) is str:
+        if isinstance(email, str) and isinstance(password, str):
             try:
-                user = self._db.find_user_by(email=email)
+                user: TypeVar('User') = self._db.find_user_by(email=email)
                 hashed_password = user.hashed_password
                 return bcrypt.checkpw(password.encode('utf-8'),
                                       hashed_password)
@@ -56,19 +57,20 @@ class Auth:
         """creates a user session."""
         assert type(email) is str
         try:
-            user: User = self._db.find_user_by(email=email)
-            user.session_id = _generate_uuid()
+            user: TypeVar('User') = self._db.find_user_by(email=email)
+            session_id: str = _generate_uuid()
+            user.session_id = session_id
             return session_id
 
         except NoResultFound:
             return None
 
-    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
+    def get_user_from_session_id(self, session_id: str) -> Union[TypeVar('User'), None]:
         """gets a user from a session_id"""
         if session_id is None:
             return None
         try:
-            user = self._db.find_user_by(session_id=session_id)
+            user: TypeVar('User') = self._db.find_user_by(session_id=session_id)
             return user
         except NoResultFound:
             return None
@@ -77,7 +79,7 @@ class Auth:
         """destroys a user's session."""
         assert type(user_id) is str
         try:
-            user = self._db.find_user_by(id=user_id)
+            user: TypeVar('User') = self._db.find_user_by(id=user_id)
             self._db.update_user(user.id, session_id=None)
         except (ValueError, NoResultFound):
             return None
